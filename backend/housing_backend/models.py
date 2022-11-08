@@ -1,10 +1,10 @@
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Integer, String, TypeDecorator
+from sqlalchemy import Column, DateTime, Integer, Float, TypeDecorator
 from sqlalchemy.orm import relationship
 
-from .database import Base
-from .enums import OceanProximity
+from database import Base
+from enums import OceanProximity
 
 
 class IntEnum(TypeDecorator):
@@ -34,9 +34,8 @@ class Prediction(Base):
     __tablename__ = "predictions"
 
     id = Column(Integer, primary_key=True, index=True)
-    predicted_at = Column(DateTime, default=datetime.now)
-    longtitude = Column(Integer)
-    latitude = Column(Integer)
+    longtitude = Column(Float)
+    latitude = Column(Float)
     housing_median_age = Column(Integer)
     total_rooms = Column(Integer)
     total_bedrooms = Column(Integer)
@@ -44,3 +43,5 @@ class Prediction(Base):
     households = Column(Integer)
     median_income = Column(Integer)
     ocean_proximity = Column(IntEnum(OceanProximity))
+    predicted_at = Column(DateTime, default=datetime.now)
+    predicted_price = Column(Float)

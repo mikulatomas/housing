@@ -3,14 +3,12 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from .enums import OceanProximity
+from enums import OceanProximity
 
 
-class Prediction(BaseModel):
-    id: int
-    predicted_at: datetime
-    longtitude: int
-    latitude: int
+class PredictionBase(BaseModel):
+    longtitude: float
+    latitude: float
     housing_median_age: int
     total_rooms: int
     total_bedrooms: int
@@ -18,6 +16,15 @@ class Prediction(BaseModel):
     households: int
     median_income: int
     ocean_proximity: OceanProximity
+    predicted_price: float
+    predicted_at: datetime
+
+
+class PredictionCreate(PredictionBase):
+    pass
+
+class Prediction(PredictionBase):
+    id: int
 
     class Config:
         orm_mode = True
