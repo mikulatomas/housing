@@ -1,5 +1,6 @@
 import pathlib
 import datetime
+from typing import List
 
 import joblib
 import numpy as np
@@ -10,7 +11,7 @@ from sqlalchemy.orm import Session
 import crud
 import models
 from enums import OceanProximity
-from schemas import Price, PredictionBase
+from schemas import Price, PredictionBase, Prediction
 from database import SessionLocal, engine
 
 
@@ -78,3 +79,8 @@ def predict(
         ))
 
     return {"price": prediction}
+
+
+@app.get("/history", response_model=List[Prediction])
+def history(db: Session = Depends(get_db)):
+    return crud.get_predictions(db)
