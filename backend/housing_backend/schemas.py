@@ -14,7 +14,7 @@ class PredictionBase(BaseModel):
     total_bedrooms: int
     population: int
     households: int
-    median_income: int
+    median_income: float
     ocean_proximity: OceanProximity
     predicted_price: float
     predicted_at: datetime

@@ -12,17 +12,31 @@ import models, schemas
 
 
 def get_predictions(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Prediction).offset(skip).limit(limit).all()
+    return (
+        db.query(models.Prediction)
+        .order_by(models.Prediction.id.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
-def create_prediction(db: Session, prediction: schemas.Prediction):
+def get_predictions_history(db: Session, limit: int = 1000):
+    return (
+        db.query(models.Prediction.predicted_at, models.Prediction.predicted_price)
+        .order_by(models.Prediction.predicted_at.asc())
+        .limit(limit)
+        .all()
+    )
+
+
+def create_prediction(db: Session, prediction: schemas.PredictionBase):
     db_prediction = models.Prediction(**prediction.dict())
     # db_user = models.User(email=user.email, hashed_password=fake_hashed_password)
     db.add(db_prediction)
     db.commit()
     db.refresh(db_prediction)
     return db_prediction
-
 
 
 # def create_user(db: Session, user: schemas.UserCreate):

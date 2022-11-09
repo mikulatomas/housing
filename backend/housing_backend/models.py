@@ -41,7 +41,7 @@ class Prediction(Base):
     total_bedrooms = Column(Integer)
     population = Column(Integer)
     households = Column(Integer)
-    median_income = Column(Integer)
+    median_income = Column(Float)
     ocean_proximity = Column(IntEnum(OceanProximity))
     predicted_at = Column(DateTime, default=datetime.now)
     predicted_price = Column(Float)

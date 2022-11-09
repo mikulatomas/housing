@@ -1,12 +1,17 @@
 import requests
 import dash_bootstrap_components as dbc
-from dash import Dash, html, dcc, Input, State, Output
+import plotly.express as px
+import pandas as pd
+from dash import Dash, html, dcc, Input, State, Output, dash_table, ctx
+
 
 
 API = "http://127.0.0.1:8000"
 
 BC = "https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
 app = Dash(__name__, external_stylesheets=[BC])
+
+PAGE_SIZE = 10
 
 form = dbc.Form(
     [
@@ -135,14 +140,54 @@ form = dbc.Form(
     ]
 )
 
+
+money = dash_table.FormatTemplate.money(2)
+
+columns = [
+    {"id": "id", "name": "id"},
+    {"id": "predicted_at", "name": "predicted at"},
+    {"id": "longtitude", "name": "longtitude"},
+    {"id": "latitude", "name": "latitude"},
+    {"id": "housing_median_age", "name": "housing median age"},
+    {"id": "total_rooms", "name": "total rooms"},
+    {"id": "total_bedrooms", "name": "total bedrooms"},
+    {"id": "population", "name": "population"},
+    {"id": "households", "name": "households"},
+    {"id": "median_income", "name": "median income"},
+    {"id": "ocean_proximity", "name": "ocean proximity"},
+    {"id": "predicted_price", "name": "price", "type": "numeric", "format": money},
+]
+
+
 app.layout = dbc.Container(
     [
         dbc.Row(
             [
-                dbc.Col(),
                 dbc.Col(
                     [html.H1("House prices", className="mb-4 mt-3"), form], width=3
                 ),
+                dbc.Col(
+                    [
+                        html.H4("Prediction history", className="mt-4"),
+                        dcc.Graph(id="plot"),
+                        html.H4("Last model requests", className="mb-4"),
+                        html.Div(dash_table.DataTable(
+                            id="history",
+                            style_cell={
+                                "overflow": "hidden",
+                                "textOverflow": "ellipsis",
+                                "maxWidth": 0,
+                            },
+                            css=[{"selector": ".show-hide", "rule": "display: none"}],
+                            columns=columns,
+                            hidden_columns=["id"],
+                            page_current=0,
+                            page_size=PAGE_SIZE,
+                            page_action="custom",
+                        )),
+                    ]
+                ),
+                
             ]
         )
     ],
@@ -151,8 +196,14 @@ app.layout = dbc.Container(
 
 
 @app.callback(
-    Output(component_id="price", component_property="children"),
+    [
+        Output(component_id="price", component_property="children"),
+        Output("history", "data"),
+        Output("plot", "figure"),
+    ],
     Input(component_id="predict", component_property="n_clicks"),
+    Input("history", "page_current"),
+    Input("history", "page_size"),
     {
         "longtitude": State(component_id="longtitude", component_property="value"),
         "latitude": State(component_id="latitude", component_property="value"),
@@ -173,14 +224,28 @@ app.layout = dbc.Container(
         ),
     },
 )
-def predict_price(n_clicks, params):
-    if n_clicks:
+def predict_price(n_clicks, page_current, page_size, params):
+    if ctx.triggered_id == "predict" and n_clicks > 0:
         response = requests.get(f"{API}/predict", params=params).json()
         predicted_price = response["price"]
 
-        return f"$ {predicted_price:.2f}"
+        price = f"$ {predicted_price:.2f}"
+    else:
+        price = "$ NaN"
 
-    return "$ NaN"
+    response_table = requests.get(
+        f"{API}/model_requests",
+        params={"skip": page_current * page_size, "limit": page_size},
+    ).json()
+
+    response_plot = requests.get(
+        f"{API}/price_history",
+        params={"limit": 1000},
+    ).json()
+
+    fig = px.line(response_plot, x="predicted_at", y="predicted_price")
+
+    return price, response_table, fig
 
 
 if __name__ == "__main__":
