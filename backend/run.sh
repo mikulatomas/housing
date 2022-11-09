@@ -1,0 +1,1 @@
+uvicorn housing_backend.main:app
