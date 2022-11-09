@@ -1,12 +1,11 @@
-# from typing import List, Union,
 from datetime import datetime
 
 from pydantic import BaseModel
 
-from enums import OceanProximity
+from .enums import OceanProximity
 
 
-class PredictionBase(BaseModel):
+class ModelRequestBase(BaseModel):
     longtitude: float
     latitude: float
     housing_median_age: int
@@ -20,10 +19,11 @@ class PredictionBase(BaseModel):
     predicted_at: datetime
 
 
-class PredictionCreate(PredictionBase):
+class ModelRequestCreate(ModelRequestBase):
     pass
 
-class Prediction(PredictionBase):
+
+class ModelRequest(ModelRequestBase):
     id: int
 
     class Config:
@@ -33,26 +33,7 @@ class Prediction(PredictionBase):
 class Price(BaseModel):
     price: float
 
-# class Item(ItemBase):
-#     id: int
-#     owner_id: int
 
-#     class Config:
-#         orm_mode = True
-
-
-# class UserBase(BaseModel):
-#     email: str
-
-
-# class UserCreate(UserBase):
-#     password: str
-
-
-# class User(UserBase):
-#     id: int
-#     is_active: bool
-#     items: List[Item] = []
-
-#     class Config:
-#         orm_mode = True
+class PricePredictionHistory(BaseModel):
+    predicted_at: datetime
+    predicted_price: float

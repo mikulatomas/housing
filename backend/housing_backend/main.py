@@ -1,27 +1,23 @@
-import pathlib
+
 import datetime
 from typing import List
 
 import joblib
 import numpy as np
 from fastapi import FastAPI, Depends
-from pydantic import BaseSettings
+
 from sqlalchemy.orm import Session
 
-import crud
-import models
-from enums import OceanProximity
-from schemas import Price, PredictionBase, Prediction
-from database import SessionLocal, engine
+from .crud import get_model_requests, get_price_prediction_history, create_prediction
+from .enums import OceanProximity
+from .models import Base
+from .schemas import Price, ModelRequestBase, ModelRequest, PricePredictionHistory
+from .database import SessionLocal, engine
+from .settings import settings
 
 
-class Settings(BaseSettings):
-    model_path: pathlib.Path = pathlib.Path("model.joblib")
-    database_url: str = "sqlite:///./sql_app.db"
+Base.metadata.create_all(bind=engine)
 
-
-models.Base.metadata.create_all(bind=engine)
-settings = Settings()
 app = FastAPI()
 model = joblib.load(settings.model_path)
 
@@ -58,15 +54,15 @@ def predict(
         households,
         median_income,
     ]
-    print(input_values)
+
     input_values.extend(ocean_proximity.one_hot())
     input_values = np.array(input_values).reshape(1, -1)
 
     prediction = model.predict(input_values)[0]
 
-    crud.create_prediction(
+    create_prediction(
         db,
-        prediction=PredictionBase(
+        prediction=ModelRequestBase(
             longtitude=longtitude,
             latitude=latitude,
             housing_median_age=housing_median_age,
@@ -84,14 +80,14 @@ def predict(
     return {"price": prediction}
 
 
-@app.get("/model_requests", response_model=List[Prediction])
+@app.get("/model_requests", response_model=List[ModelRequest])
 def model_requests(limit: int = 10, skip: int = 0, db: Session = Depends(get_db)):
-    return crud.get_predictions(db, limit=limit, skip=skip)
+    return get_model_requests(db, limit=limit, skip=skip)
 
 
-@app.get("/price_history")
-def price_history(limit: int = 10, db: Session = Depends(get_db)):
-    return crud.get_predictions_history(db, limit=limit)
+@app.get("/price_prediction_history", response_model=List[PricePredictionHistory])
+def price_prediction_history(limit: int = 10, db: Session = Depends(get_db)):
+    return get_price_prediction_history(db, limit=limit)
 
 
 # @app.get("/random")

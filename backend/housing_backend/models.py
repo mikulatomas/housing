@@ -1,10 +1,9 @@
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Integer, Float, TypeDecorator
-from sqlalchemy.orm import relationship
 
-from database import Base
-from enums import OceanProximity
+from .database import Base
+from .enums import OceanProximity
 
 
 class IntEnum(TypeDecorator):
@@ -30,7 +29,7 @@ class IntEnum(TypeDecorator):
         return self._enumtype(value)
 
 
-class Prediction(Base):
+class ModelRequest(Base):
     __tablename__ = "predictions"
 
     id = Column(Integer, primary_key=True, index=True)

@@ -20,11 +20,4 @@ class OceanProximity(IntEnum):
         encoding[self.value] = 1
 
         return encoding
-    
-    # @classmethod
-    # def __modify_schema__(cls, schema: Dict[str, Any]):
-    #     # Human readable IntEnum in fastapi docs
-    #     # source: https://github.com/tiangolo/fastapi/issues/2129
-    #     schema["enum"] = [f"{choice.name} ({choice.value})" for choice in cls]
-    #     return schema
 
